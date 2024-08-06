@@ -1,0 +1,88 @@
+#INCLUDE 'PROTHEUS.CH'
+#INCLUDE 'FWMVCDEF.CH'
+
+//-------------------------------------------------------------------
+/*/{Protheus.doc} CadX5A2 - Regiões (Tabela A2)
+
+Cadastro de Regiões
+
+@author 	Augusto Krejci Bem-Haja
+@since 		29/12/2015
+@return		nil
+/*/
+//-------------------------------------------------------------------
+User Function CadX5A2()
+	Local oBrowse       
+	
+	oBrowse := FWMBrowse():New()
+	oBrowse:SetAlias('SX5')
+	oBrowse:SetDescription('Cadastro de Regiões')  
+	oBrowse:SetFilterDefault("X5_TABELA=='A2'")
+	oBrowse:Activate()
+Return NIL
+
+//-------------------------------------------------------------------
+Static Function MenuDef()
+	Local aRotina := {}
+	ADD OPTION aRotina TITLE 'Pesquisar'  ACTION 'PesqBrw'        OPERATION 1 ACCESS 0
+	ADD OPTION aRotina TITLE 'Visualizar' ACTION 'VIEWDEF.CadX5A2' OPERATION 2 ACCESS 0
+	ADD OPTION aRotina TITLE 'Incluir'    ACTION 'VIEWDEF.CadX5A2' OPERATION 3 ACCESS 0
+	ADD OPTION aRotina TITLE 'Alterar'    ACTION 'VIEWDEF.CadX5A2' OPERATION 4 ACCESS 0
+	//ADD OPTION aRotina TITLE 'Excluir'    ACTION 'VIEWDEF.CadX5A2' OPERATION 5 ACCESS 0
+	ADD OPTION aRotina TITLE 'Imprimir'   ACTION 'VIEWDEF.CadX5A2' OPERATION 8 ACCESS 0
+	ADD OPTION aRotina TITLE 'Copiar'     ACTION 'VIEWDEF.CadX5A2' OPERATION 9 ACCESS 0
+Return aRotina
+
+//-------------------------------------------------------------------
+Static Function ModelDef()
+	Local oStruSX5 := FWFormStruct(1,'SX5')
+	Local oModel
+	
+	oStruSX5:SetProperty("X5_TABELA",	MODEL_FIELD_INIT,{|| "A2" })
+	oStruSX5:SetProperty("X5_CHAVE",	MODEL_FIELD_INIT,{|| LoadValues() })
+	
+	oStruSX5:SetProperty("X5_TABELA",	MODEL_FIELD_WHEN,{|| .F. })
+	oStruSX5:SetProperty("X5_CHAVE",	MODEL_FIELD_WHEN,{|| .F. })
+	           
+	oModel := MPFormModel():New('SX5M')
+	oModel:AddFields('SX5MASTER',,oStruSX5)
+
+    oModel:SetPrimaryKey({'X5_FILIAL','X5_TABELA','X5_CHAVE'})
+	oModel:SetDescription('Modelo de Dados de Regiões')
+	oModel:GetModel('SX5MASTER'):SetDescription('Dados de Regiões')
+Return oModel
+
+//-------------------------------------------------------------------
+Static Function ViewDef()
+	Local oModel   := FWLoadModel('CadX5A2')
+	Local oStruSX5 := FWFormStruct(2,'SX5')
+	Local oView  
+
+	oView := FWFormView():New()
+	oView:SetModel(oModel)
+	oView:AddField('VIEW_SX5',oStruSX5,'SX5MASTER')
+
+	oView:CreateHorizontalBox('TELA',100)
+    oView:SetCloseOnOk({||.T.})
+	oView:SetOwnerView('VIEW_SX5','TELA')
+	//oView:bAfterViewActivate := {|| LoadValues() }
+Return oView
+
+Static Function LoadValues()	
+	Local nProxChave
+	Local aAreaSX5 := SX5->(GetArea())
+	
+	aChave := FWGetSx5("A2")
+	For _x := 1 to Len(aChave)
+		nProxChave := Val(aChave[_x][3])
+	Next _x
+	
+//	SX5->(DbSeek(xFilial("SX5")+"A2"))
+//	While SX5->(!EOF()) .and. (SX5->X5_TABELA == 'A2')
+//		nProxChave := Val(SX5->X5_CHAVE)
+//		SX5-> (DbSkip())  
+//	End
+	nProxChave++
+	
+	RestArea(aAreaSX5)	
+Return (StrZero(nProxChave,3))
