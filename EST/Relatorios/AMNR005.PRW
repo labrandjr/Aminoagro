@@ -38,7 +38,7 @@ If Pergunte(cPerg,.T.)
 	Endif
 
 	If MsgYesNo("Confirma processamento ?","Aviso","INFO")
-		Processa({|| pTrab05()()})
+		Processa({|| pTrab05()})
 		Processa({|| pAmnR05()})
 		Processa({|| pImpR05()})
 	Endif	
